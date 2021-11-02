@@ -14,10 +14,6 @@ nextApp.prepare().then(async() => {
     const io: socketio.Server = new socketio.Server();
     io.attach(server);
 
-    app.get('/', async (_: Request, res: Response) => {
-        res.send('NFTracker: Coming Soon to Android and iOS')
-    });
-
     let interval: NodeJS.Timeout;
 
     io.on('connection', (socket: socketio.Socket) => {
