@@ -1,7 +1,8 @@
-import express, { Express, Request, Response } from 'express';
+import express, { Express } from 'express';
 import * as http from 'http';
 import next, { NextApiHandler } from 'next';
 import * as socketio from 'socket.io';
+import moment from 'moment';
 
 const port: number = parseInt(process.env.PORT || '3000', 10);
 const dev: boolean = process.env.NODE_ENV !== 'production';
@@ -21,7 +22,7 @@ nextApp.prepare().then(async() => {
         if (interval) {
           clearInterval(interval);
         }
-        interval = setInterval(() => getApiAndEmit(socket), 1000);
+        interval = setInterval(async () => await getApiAndEmit(socket), 5000);
 
         socket.on('disconnect', () => {
             console.log('client disconnected');
@@ -35,8 +36,23 @@ nextApp.prepare().then(async() => {
     });
 });
 
-const getApiAndEmit = (socket: socketio.Socket) => {
-  const response = new Date();
-  // Emitting a new message. Will be consumed by the client
-  socket.emit("FromAPI", response);
+const getApiAndEmit = async (socket: socketio.Socket) => {
+  const artistsJSON = socket.handshake.query.artists;
+  const artists = JSON.parse(artistsJSON as string);
+  if (!artists || artists.length === 0) {
+    return;
+  }
+
+  const date = moment().subtract(5, 'seconds').unix();
+  const artistsWithNewDrops = [];
+
+  for (let i = 0; i < artists.length; i++) {
+    const res = await fetch(`https://api.opensea.io/api/v1/events?account_address=${artists[i]}&event_type=created&occurred_after=${date}`);
+    const resJSON = await res.json();
+    if (resJSON && resJSON.asset_events.length > 0) {
+      artistsWithNewDrops.push(artists[i]);
+    }
+  }
+
+  socket.emit("FromAPI", artistsWithNewDrops);
 };
