@@ -47,10 +47,18 @@ const getApiAndEmit = async (socket: socketio.Socket) => {
   const artistsWithNewDrops = [];
 
   for (let i = 0; i < artists.length; i++) {
-    const res = await fetch(`https://api.opensea.io/api/v1/events?account_address=${artists[i]}&event_type=created&occurred_after=${date}`);
-    const resJSON = await res.json();
+    let res, resJSON;
+    switch (artists[i].platform) {
+      case 'opensea':
+        res = await fetch(`https://api.opensea.io/api/v1/events?account_address=${artists[i].address}&event_type=created&occurred_after=${date}`);
+        resJSON = await res.json();
+        break;
+      default:
+        break;
+    }
+
     if (resJSON && resJSON.asset_events.length > 0) {
-      artistsWithNewDrops.push(artists[i]);
+      artistsWithNewDrops.push(artists[i].artist);
     }
   }
 
