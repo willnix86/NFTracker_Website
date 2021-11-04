@@ -62,5 +62,5 @@ const getApiAndEmit = async (socket: socketio.Socket) => {
     }
   }
 
-  socket.emit("FromAPI", artistsWithNewDrops);
+  socket.emit("NFTracker", artistsWithNewDrops);
 };
