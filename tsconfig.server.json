@@ -4,7 +4,8 @@
   "compilerOptions": {
     "module": "commonjs",
     "outDir": "dist",
+    "isolatedModules": false,
     "noEmit": false
   },
-  "include": ["server.ts"]
+  "include": ["server/**/*.ts"]
 }

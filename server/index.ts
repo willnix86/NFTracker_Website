@@ -1,17 +1,20 @@
-import express, { Express } from 'express';
-import * as http from 'http';
-import next, { NextApiHandler } from 'next';
+import { createServer } from 'http'
+import { parse } from 'url'
+import next from 'next'
 import * as socketio from 'socket.io';
 import moment from 'moment';
 
 const port: number = parseInt(process.env.PORT || '3000', 10);
 const dev: boolean = process.env.NODE_ENV !== 'production';
-const nextApp = next({ dev });
-const nextHandler: NextApiHandler = nextApp.getRequestHandler();
+const app = next({ dev });
+const handle = app.getRequestHandler();
 
-nextApp.prepare().then(async() => {
-    const app: Express = express();
-    const server: http.Server = http.createServer(app);
+app.prepare().then(async() => {
+    const server = createServer((req, res) => {
+      const parsedUrl = parse(req.url!, true)
+      handle(req, res, parsedUrl)
+    }).listen(port)
+
     const io: socketio.Server = new socketio.Server();
     io.attach(server);
 
@@ -29,11 +32,12 @@ nextApp.prepare().then(async() => {
         })
     });
 
-    app.all('*', (req: any, res: any) => nextHandler(req, res));
-
-    server.listen(port, () => {
-        console.log(`> Ready on http://localhost:${port}`);
-    });
+    // tslint:disable-next-line:no-console
+    console.log(
+      `> Server listening at http://localhost:${port} as ${
+        dev ? 'development' : process.env.NODE_ENV
+      }`
+    )
 });
 
 const getApiAndEmit = async (socket: socketio.Socket) => {
