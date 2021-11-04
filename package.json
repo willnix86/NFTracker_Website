@@ -6,7 +6,7 @@
     "build:server": "tsc --project tsconfig.server.json",
     "build:next": "next build",
     "build": "npm run build:next && npm run build:server",
-    "start": "NODE_ENV=production node server.js"
+    "start": "NODE_ENV=production node dist/server.js"
   },
   "dependencies": {
     "@types/express": "^4.17.13",
