@@ -54,13 +54,18 @@ const getApiAndEmit = async (socket: socketio.Socket) => {
     let res, resJSON;
     switch (artists[i].platform) {
       case 'opensea':
-        res = await fetch(`https://api.opensea.io/api/v1/events?account_address=${artists[i].address}&event_type=created&occurred_after=${date}`);
-        resJSON = await res.json();
+        try {
+          res = await fetch(`https://api.opensea.io/api/v1/events?account_address=${artists[i].address}&event_type=created&occurred_after=${date}`);
+          if (res.status < 300) {
+            resJSON = await res.json();
+          }
+        } catch (e) { 
+          console.log(e);
+        }
         break;
       default:
         break;
     }
-
     if (resJSON && resJSON.asset_events.length > 0) {
       artistsWithNewDrops.push(artists[i].artist);
     }
